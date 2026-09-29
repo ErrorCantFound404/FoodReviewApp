@@ -176,9 +176,13 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     }
 
     final restaurant = _restaurant!;
-    final restaurantImages = restaurant.imageUrls.isNotEmpty
-        ? restaurant.imageUrls
-        : [restaurant.coverImageUrl];
+    final restaurantImages = restaurant.imageUrls
+        .map((url) => url.trim())
+        .where((url) => url.isNotEmpty)
+        .toList();
+    if (restaurantImages.isEmpty) {
+      restaurantImages.add(restaurant.coverImageUrl.trim());
+    }
     final restLatLng = LatLng(restaurant.latitude, restaurant.longitude);
     const tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
     final muted = isDark ? AppTheme.textMutedDark : AppTheme.textMutedLight;
@@ -970,12 +974,15 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
       child: const Icon(Icons.broken_image_rounded, color: Colors.grey, size: 32),
     );
 
-    if (imageUrl.startsWith('data:image/')) {
+    final normalizedUrl = imageUrl.trim();
+    if (normalizedUrl.isEmpty) return fallback;
+
+    if (normalizedUrl.startsWith('data:image/')) {
       try {
         return Image.memory(
-          base64Decode(imageUrl.split(',').last),
+          base64Decode(normalizedUrl.split(',').last),
           fit: fit,
-          errorBuilder: (_, _, _) => fallback,
+          errorBuilder: (_, error, stackTrace) => fallback,
         );
       } catch (_) {
         return fallback;
@@ -983,9 +990,9 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     }
 
     return Image.network(
-      imageUrl,
+      ApiService.resolveImageUrl(normalizedUrl),
       fit: fit,
-      errorBuilder: (_, _, _) => fallback,
+      errorBuilder: (_, error, stackTrace) => fallback,
     );
   }
 

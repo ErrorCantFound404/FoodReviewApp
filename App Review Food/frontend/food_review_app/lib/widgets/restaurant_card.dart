@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:collection';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/restaurant.dart';
@@ -49,7 +48,10 @@ class RestaurantCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final imageUrl = restaurant.cardImageUrl ?? restaurant.coverImageUrl;
+    final cardImageUrl = restaurant.cardImageUrl?.trim() ?? '';
+    final imageUrl = cardImageUrl.isNotEmpty
+        ? cardImageUrl
+        : restaurant.coverImageUrl.trim();
     final isOpen = restaurant.isOpen;
     final cardBg = isDark ? AppTheme.darkCardBg : AppTheme.lightCardBg;
     final border = isDark ? AppTheme.darkGrayBorder : AppTheme.grayBorder;
@@ -233,6 +235,10 @@ class RestaurantCard extends StatelessWidget {
   }
 
   Widget _buildImage(String imageUrl, bool isDark) {
+    if (imageUrl.trim().isEmpty) {
+      return _imageFallback(isDark);
+    }
+
     if (imageUrl.startsWith('data:image/')) {
       final bytes = _getOrDecodeBase64(imageUrl);
       if (bytes == null) return _imageFallback(isDark);
@@ -242,7 +248,7 @@ class RestaurantCard extends StatelessWidget {
         fit: BoxFit.cover,
         gaplessPlayback: true, // Tránh nhấp nháy khi đổi ảnh
         filterQuality: FilterQuality.low,
-        errorBuilder: (_, __, ___) => _imageFallback(isDark),
+        errorBuilder: (_, error, stackTrace) => _imageFallback(isDark),
       );
     }
 
@@ -251,7 +257,7 @@ class RestaurantCard extends StatelessWidget {
       fit: BoxFit.cover,
       gaplessPlayback: true,
       filterQuality: FilterQuality.low,
-      errorBuilder: (_, __, ___) => _imageFallback(isDark),
+      errorBuilder: (_, error, stackTrace) => _imageFallback(isDark),
     );
   }
 

@@ -266,6 +266,7 @@ class _AddEditRestaurantDialogState extends State<AddEditRestaurantDialog> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isEdit = widget.restaurant != null;
+    final isCompact = MediaQuery.sizeOf(context).width < 600;
 
     return Dialog(
       backgroundColor: isDark ? AppTheme.pitchBlack : AppTheme.pureWhite,
@@ -274,9 +275,14 @@ class _AddEditRestaurantDialogState extends State<AddEditRestaurantDialog> {
         side: BorderSide(color: isDark ? Colors.white12 : Colors.black12),
       ),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 540),
+        constraints: BoxConstraints(
+          maxWidth: 540,
+          maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+        ),
+        height: isCompact ? MediaQuery.sizeOf(context).height * 0.82 : null,
         padding: const EdgeInsets.all(24),
         child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           child: Form(
             key: _formKey,
             child: Column(
@@ -286,16 +292,20 @@ class _AddEditRestaurantDialogState extends State<AddEditRestaurantDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      isEdit ? 'CHỈNH SỬA NHÀ HÀNG' : 'THÊM NHÀ HÀNG MỚI',
-                      style: TextStyle(
-                        fontFamily: 'Outfit',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: isDark
-                            ? AppTheme.pureWhite
-                            : AppTheme.pitchBlack,
-                        letterSpacing: 1.0,
+                    Expanded(
+                      child: Text(
+                        isEdit ? 'CHỈNH SỬA NHÀ HÀNG' : 'THÊM NHÀ HÀNG MỚI',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: isDark
+                              ? AppTheme.pureWhite
+                              : AppTheme.pitchBlack,
+                          letterSpacing: 1.0,
+                        ),
                       ),
                     ),
                     IconButton(
@@ -356,6 +366,7 @@ class _AddEditRestaurantDialogState extends State<AddEditRestaurantDialog> {
                                   ),
                                 )
                               : DropdownButtonFormField<String>(
+                                  isExpanded: true,
                                   initialValue:
                                       _categories.any(
                                         (c) =>
@@ -439,6 +450,7 @@ class _AddEditRestaurantDialogState extends State<AddEditRestaurantDialog> {
                           ),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
+                            isExpanded: true,
                             initialValue:
                                 _priceRangeOptions.contains(_selectedPriceRange)
                                 ? _selectedPriceRange
@@ -526,8 +538,10 @@ class _AddEditRestaurantDialogState extends State<AddEditRestaurantDialog> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
                           'URL Ảnh Bìa Hoặc Chọn File Ảnh *',
@@ -706,14 +720,17 @@ class _AddEditRestaurantDialogState extends State<AddEditRestaurantDialog> {
                 size: 19,
               ),
               const SizedBox(width: 8),
-              Text(
-                'Danh sách món ăn (${_menuItems.length})',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : Colors.black87,
+              Expanded(
+                child: Text(
+                  'Danh sách món ăn (${_menuItems.length})',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
                 ),
               ),
-              const Spacer(),
               TextButton.icon(
                 onPressed: () => _showMenuItemDialog(),
                 icon: const Icon(Icons.add_rounded, size: 18),

@@ -719,7 +719,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       ),
     );
 
-    nameController.dispose();
+    // The dialog route still renders during its closing animation. Defer
+    // disposal until that animation is fully finished.
+    Future<void>.delayed(
+      const Duration(milliseconds: 300),
+      nameController.dispose,
+    );
+
     if (result != null && result.name.isNotEmpty) {
       final exists = _categories.any(
         (category) => category.name.toLowerCase() == result.name.toLowerCase(),
@@ -1981,16 +1987,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: isDark
-                      ? AppTheme.textMutedDark
-                      : AppTheme.textMutedLight,
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: isDark
+                        ? AppTheme.textMutedDark
+                        : AppTheme.textMutedLight,
+                  ),
                 ),
               ),
+              const SizedBox(width: 6),
               Icon(icon, color: color, size: 20),
             ],
           ),
@@ -2504,10 +2515,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 ),
               ),
               const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final buttonWidth = constraints.maxWidth < 500
+                      ? constraints.maxWidth
+                      : (constraints.maxWidth - 20) / 3;
+                  return Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      SizedBox(
+                        width: buttonWidth,
+                        child: OutlinedButton.icon(
                       onPressed: () => _showRestaurantDetails(
                         restaurant,
                         showApprovalActions: true,
@@ -2516,9 +2535,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       label: const Text('Xem chi tiết'),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: OutlinedButton.icon(
+                      SizedBox(
+                        width: buttonWidth,
+                        child: OutlinedButton.icon(
                       onPressed: () => _reviewRestaurant(restaurant, false),
                       icon: const Icon(Icons.close_rounded),
                       label: const Text('Từ chối'),
@@ -2527,9 +2546,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: FilledButton.icon(
+                      SizedBox(
+                        width: buttonWidth,
+                        child: FilledButton.icon(
                       onPressed: () => _reviewRestaurant(restaurant, true),
                       icon: const Icon(Icons.check_rounded),
                       label: const Text('Phê duyệt'),
@@ -2537,8 +2556,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         backgroundColor: Colors.green,
                       ),
                     ),
-                  ),
-                ],
+                      ),
+                    ],
+                  );
+                },
               ),
             ],
           ),
@@ -2661,7 +2682,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
+                                Expanded(
+                                  child: Row(
                                   children: [
                                     CircleAvatar(
                                       radius: 14,
@@ -2681,15 +2703,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    Text(
-                                      rev.userName,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
+                                    Expanded(
+                                      child: Text(
+                                        rev.userName,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
+                                ),
+                                const SizedBox(width: 8),
                                 Row(
                                   children: [
                                     const Icon(
@@ -2784,8 +2812,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            spacing: 12,
+            runSpacing: 10,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
                 'DANH SÁCH THỂ LOẠI (${_categories.length})',
@@ -2917,8 +2948,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            spacing: 12,
+            runSpacing: 10,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
                 'DANH SÁCH NGƯỜI DÙNG (${_users.length})',
@@ -3033,11 +3067,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                           children: [
                             Row(
                               children: [
-                                Text(
-                                  u.fullName,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
+                                Expanded(
+                                  child: Text(
+                                    u.fullName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -3064,6 +3102,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                             const SizedBox(height: 2),
                             Text(
                               '@${u.username}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: isDark ? Colors.white60 : Colors.black54,
@@ -3075,6 +3115,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       Row(
                         children: [
                           IconButton(
+                            constraints: const BoxConstraints.tightFor(
+                              width: 36,
+                              height: 36,
+                            ),
+                            padding: EdgeInsets.zero,
+                            visualDensity: VisualDensity.compact,
                             icon: const Icon(
                               Icons.visibility_outlined,
                               color: AppTheme.fireCoral,
@@ -3083,6 +3129,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                             onPressed: () => _showUserDetails(u),
                           ),
                           IconButton(
+                            constraints: const BoxConstraints.tightFor(
+                              width: 36,
+                              height: 36,
+                            ),
+                            padding: EdgeInsets.zero,
+                            visualDensity: VisualDensity.compact,
                             icon: const Icon(
                               Icons.edit_outlined,
                               color: Colors.blueAccent,
@@ -3091,6 +3143,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                             onPressed: () => _openAddEditUserDialog(u),
                           ),
                           IconButton(
+                            constraints: const BoxConstraints.tightFor(
+                              width: 36,
+                              height: 36,
+                            ),
+                            padding: EdgeInsets.zero,
+                            visualDensity: VisualDensity.compact,
                             icon: Icon(
                               Icons.delete_outline,
                               color: u.isAdmin
